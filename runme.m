@@ -11,14 +11,16 @@ figure;
 axis equal;
 axis([0 200 0 100]);
 hold on;
+ruv=0.995
 
+%% Start screen
 
 gui = imread('gui.png');
-
 gui1=imagesc([0 200], [0 100], flipdim(gui,1));
 
 pause
 
+%% Read images and audio
 im = imread('screen.jpg');  % read image;
 [alert,fs]= wavread('this.wav');
 alert1=audioplayer(alert,fs);
@@ -113,7 +115,7 @@ for bb=1:num
     eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2), ''linewidth'', 2, ''lineStyle'', ''--'', ''Color'',[0.4 0.4 0.4])']);  %%
                     
     
-    %% Ball
+    %% Aeroplane
  
     h(bb)=imagesc([ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
       
@@ -148,7 +150,7 @@ while ts
                 
                 
                 
-                if norm(mouseLoc(1,1:2)-ballPos(bb,:)) <= ballRad
+                if norm(mouseLoc(1,1:2)-ballPos(bb,:)) <= ballRad  %Drag
                     
                     eval(['pathPos_' num2str(bb) '=[0 0]']);
                 eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
@@ -224,7 +226,7 @@ while ts
             yCord(bb)=grad(bb,2);
             
             
-    [sv(bb) zv(bb)]=RoundOffAngle(atan2(yCord(bb),xCord(bb)));
+    [sv(bb) zv(bb)]=RoundOffAngle(atan2(yCord(bb),xCord(bb))); 
             
             eval(['distance(bb)=norm(pathPos_' num2str(bb) '(2,1:2)-pathPos_' num2str(bb) '(1,1:2))'])
             
@@ -292,13 +294,13 @@ while ts
     for uv=uv
         poi=norm(ballPos(bb,:)-ballPos(uv,:));
         
-        if poi<12
+        if poi<12    % if distance less than 12
           play(alert1);
           
        
            
         end
-       if poi<8
+       if poi<8 % if distance less than 8
           stop(alert1);
           play(crash1);
          
@@ -399,7 +401,7 @@ while ts
     end
     
     
-    if rand>0.995
+    if rand>ruv
         
         num=num+1;
         
@@ -451,12 +453,12 @@ while ts
     %%
     eval(['pathPos_' num2str(num) '(1,1:2)=ballPos(num,:)']);
     
-    %% PATH
+    %% set PATH
     
     eval(['plot_' num2str(num) '=plot(pathPos_' num2str(num) '(:,1),pathPos_' num2str(num) '(:,2), ''lineStyle'', ''--'', ''linewidth'', 2)']);
                     
     
-    %% Ball
+    %% Aeroplane
   
       
     h(num)=imagesc([ballPos(num,1)-ballRad ballPos(num,1)+ballRad], [ballPos(num,2)-ballRad ballPos(num,2)+ballRad], flipdim(sprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:),3), 'alphadata', alphasprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:));
@@ -467,7 +469,7 @@ while ts
     
     
     
-    
+    ruv=ruv-0.0000001
     toc(start)
    pause(0.03-toc(start));
     
