@@ -6,28 +6,62 @@ clc
 
 figure;
 axis equal;
-axis([0 100 0 100]);
+axis([0 200 0 100]);
 hold on;
 
 
+im = imread('screen.jpg');  % read image; 
+im = imrotate(im,360)
 
+imagesc([0 200], [0 100], flipdim(im,1));
+
+set(gca,'Ydir','normal');
 
 %% Variables
 ts=1
 sn = 1;
-ballRad = 4;
+ballRad = 2;
 e4=tic;
-num=6;
+num=2;
 for bb=1:num
     distance(bb)=0;
- 
+     veloC(bb)=5;
+     veloC(bb)=veloC(bb)*0.02;
     iter(bb)=0;
     dragging(bb) = 0;
     dr(bb)=0;
     i(bb)=1;
     aw(bb)=0;
     xyz(bb)=0;
-    ballPos(bb,:) = round(100*rand(1,2));
+    
+    %% BALL POS
+    
+    if rand<0.25
+        ballPos(bb,:) = [round(200*rand) 4];
+        angel=rand*pi
+        xCord(bb)=cos(angel)*veloC(bb);
+        yCord(bb)=sin(angel)*veloC(bb);
+        
+    elseif rand<0.5
+        ballPos(bb,:) = [round(200*rand) 96];
+        angel=-rand*pi
+        xCord(bb)=cos(angel)*veloC(bb);
+        yCord(bb)=sin(angel)*veloC(bb);
+        
+    elseif rand<0.75
+    ballPos(bb,:) = [4 round(100*rand)];
+    angel=-rand*pi+pi/2;
+        xCord(bb)=cos(angel)*veloC(bb);
+        yCord(bb)=sin(angel)*veloC(bb);
+      
+    else
+        ballPos(bb,:) = [196 round(100*rand)];
+        angel=-rand*pi+pi/2;
+        xCord(bb)=cos(angel)*veloC(bb);
+        yCord(bb)=sin(angel)*veloC(bb);
+    end
+    
+    %%
     eval(['pathPos_' num2str(bb) '(1,1:2)=ballPos(bb,:)']);
     
     %% PATH
@@ -57,7 +91,7 @@ set(gcf, 'WindowButtonMotionFcn', 'mouseLoc = get(gca, ''CurrentPoint'');',...
     'WindowButtonDownFcn', 'pressed = 1; justClicked = ones(num);',...
     'WindowButtonUpFcn', 'pressed = 0;');
 
-%% Start of main loop
+    %% Start of main loop
 
 
 
@@ -100,8 +134,11 @@ while ts
                 
                   for rt=1:2
                        
-                        if  frt(rt)>95
-                            frt(rt)=95;
+                        if  frt(1)>195
+                            frt(1)=195;
+                        end
+                        if frt(2)>95
+                           frt(2)=95; 
                         end
                         
                         if frt(rt)<5
@@ -151,14 +188,10 @@ while ts
             
            
             
-            
-            
             veloC(bb)=5;
+     veloC(bb)=veloC(bb)*0.02;
             
-            
-            
-            
-            veloC(bb)=veloC(bb)*0.02;
+           
             
             iter(bb)=floor(distance(bb)/veloC(bb))
             rem(bb)=distance(bb)-veloC(bb)*iter(bb)
@@ -196,6 +229,13 @@ while ts
             eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
             
             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
+            
+        else
+             ballPos(bb,:)=[ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)];
+             
+             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
+            
+            
         end
     
     %% Collision    
@@ -206,18 +246,95 @@ while ts
     
     for uv=uv
         
-       if norm(ballPos(bb,:)-ballPos(uv,:))<8
+       if norm(ballPos(bb,:)-ballPos(uv,:))<4
           
            ts=0;
        end
         
     end
     
-    %% 
     
+    if ballPos(bb,1)>196 || ballPos(bb,1)<4
+        xCord(bb)=-xCord(bb)
+    end
+    
+    if ballPos(bb,2)>96 || ballPos(bb,2)<4
+        yCord(bb)=-yCord(bb)
+    end
+        
+    %% LANDING
+    
+    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[50,50])<5'])
+    
+        dragging(bb)=0;
+        
+    end
+    end
+    
+    if rand>0.999
+        
+        num=num+1;
+        
+        veloC(num)=5;
+     veloC(num)=veloC(num)*0.02;
+    
+    distance(num)=0;
+ 
+    iter(num)=0;
+    dragging(num) = 0;
+    dr(num)=0;
+    i(num)=1;
+    aw(num)=0;
+    xyz(num)=0;
+    
+    %% BALL POS
+    
+    if rand<0.25
+        ballPos(num,:) = [round(200*rand) 4];
+        angel=rand*pi
+        xCord(num)=cos(angel)*veloC(num);
+        yCord(num)=sin(angel)*veloC(num);
+        
+    elseif rand<0.5
+        ballPos(num,:) = [round(200*rand) 96];
+        angel=-rand*pi
+        xCord(num)=cos(angel)*veloC(num);
+        yCord(num)=sin(angel)*veloC(num);
+        
+    elseif rand<0.75
+    ballPos(num,:) = [4 round(100*rand)];
+    angel=-rand*pi+pi/2;
+        xCord(num)=cos(angel)*veloC(num);
+        yCord(num)=sin(angel)*veloC(num);
+      
+    else
+        ballPos(num,:) = [196 round(100*rand)];
+        angel=-rand*pi+pi/2;
+        xCord(num)=cos(angel)*veloC(num);
+        yCord(num)=sin(angel)*veloC(num);
+    end
+    
+    %%
+    eval(['pathPos_' num2str(num) '(1,1:2)=ballPos(num,:)']);
+    
+    %% PATH
+    
+    eval(['plot_' num2str(num) '=plot(pathPos_' num2str(num) '(:,1),pathPos_' num2str(num) '(:,2)), ''linewidth'', 5']);
+                    
+    
+    %% Ball
+  
+    r(num) = rectangle('position', [ballPos(num,:)-ballRad 2*ballRad*[1 1]],...
+        'curvature', [1 1], 'facecolor', 'r');
     
     
     end
+    
+
+    
+    
+    
+    
    pause(0.02-toc(start));
     
 end
