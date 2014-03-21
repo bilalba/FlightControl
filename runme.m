@@ -33,9 +33,10 @@ sn = 1;
 ballRad = 2;
 e4=tic;
 num=2;
+zxca=0;
 for bb=1:num
     distance(bb)=0;
-     veloC(bb)=5;
+     veloC(bb)=6.5;
      veloC(bb)=veloC(bb)*0.02;
     iter(bb)=0;
     dragging(bb) = 0;
@@ -84,14 +85,13 @@ for bb=1:num
     
     %% PATH
     
-    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2), ''linewidth'', 3)']);  %%
+    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2), ''linewidth'', 2, ''lineStyle'', ''--'', ''Color'',[0.4 0.4 0.4])']);  %%
                     
     
     %% Ball
   
 
-    r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],...
-        'curvature', [1 1], 'facecolor', 'r');
+    r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],'curvature', [1 1], 'facecolor', 'r');
     
     
     
@@ -179,7 +179,7 @@ while ts
                   
                     
                     
-                    eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2))']);
+                    eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2), ''lineStyle'', ''--'', ''Color'', [0.4 0.4 0.4])']);
                     
                               
                     
@@ -300,12 +300,13 @@ while ts
         
     %% IF LANDING
     
-    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[80,50])<5'])
+    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[80,50])<2']) && landing(bb)==0 && dragging(bb)==1
         
-       lmn=atan2(eval(['pathPos_' num2str(bb) '(end-3,2)-pathPos_' num2str(bb) '(end,2)']),eval(['pathPos_' num2str(bb) '(end-3,2)-pathPos_' num2str(bb) '(end,2)']))
+       lmn=atan2(eval(['pathPos_' num2str(bb) '(end,2)-pathPos_' num2str(bb) '(end-3,2)']),eval(['pathPos_' num2str(bb) '(end,1)-pathPos_' num2str(bb) '(end-3,1)']))
     
         
         if lmn<0.785 && lmn>-0.785
+            
         dragging(bb)=0;
         landing(bb)=1;
         end
@@ -315,15 +316,56 @@ while ts
     
     if landing(bb)==1;
        %Landing goes here
+        eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2), ''Color'', [0 1 0] )']);
+                    
+        if norm(ballPos(bb,:)-[80,50])<3
         
+            
+           zxca=bb;
         
+        end
         
     end
     
     
     end
     
+    if zxca~=0
+        
+        
+         distance(zxca)=[]
+        iter(zxca)=[];
+    dragging(zxca) = [];
+    dr(zxca)=[];
+    i(zxca)=[];
+    aw(zxca)=[];
+    xyz(zxca)=[];
+    landing(zxca)=[];
+    sv(zxca)=[];
+    zv(zxca)=[];
+    ballPos(zxca,:)=[];
+    angel(zxca)=[];
+    xCord(zxca)=[];
+    yCord(zxca)=[];
+    h(zxca)=[];
+    r(zxca)=[];
+    if zxca==num
+        eval(['pathPos_' num2str(zxca) '=[]'])
+    else
     
+    for gtr=zxca+1:num
+    eval(['pathPos_' num2str(gtr-1) '=[]'])
+    eval(['pathPos_' num2str(gtr-1) '=pathPos_' num2str(gtr)])
+    
+    end
+    
+    eval(['pathPos_' num2str(num) '=[]'])
+    end
+    num=num-1;
+    
+    zxca=0;
+
+    end
     
     
     if rand>0.999
@@ -342,8 +384,9 @@ while ts
     aw(num)=0;
     xyz(num)=0;
     landing(num)=0;
-    sv(bb)=0;
-    zv(bb)=0;
+    sv(num)=0;
+    zv(num)=0;
+    
     
     %% BALL POS
     
@@ -379,7 +422,7 @@ while ts
     
     %% PATH
     
-    eval(['plot_' num2str(num) '=plot(pathPos_' num2str(num) '(:,1),pathPos_' num2str(num) '(:,2)), ''linewidth'', 5']);
+    eval(['plot_' num2str(num) '=plot(pathPos_' num2str(num) '(:,1),pathPos_' num2str(num) '(:,2), ''lineStyle'', ''--'', ''linewidth'', 2)']);
                     
     
     %% Ball
