@@ -1,5 +1,9 @@
 %% Initilization
 
+
+%line 75
+
+
 clear all
 close all
 clc
@@ -10,9 +14,14 @@ axis([0 200 0 100]);
 hold on;
 
 
+
+
 im = imread('screen.jpg');  % read image;
 
+[sprite map alphasprite]=imread('low_qual.png'); %read image sprite
 
+
+[h1 w d] = size(sprite)
 
 imagesc([0 200], [0 100], flipdim(im,1));
 
@@ -34,56 +43,62 @@ for bb=1:num
     i(bb)=1;
     aw(bb)=0;
     xyz(bb)=0;
+    landing(bb)=0;
+    sv(bb)=0
+    zv(bb)=0
     
     %% BALL POS
     
     if rand<0.25
         ballPos(bb,:) = [round(200*rand) 4];
-        angel=rand*pi
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=rand*pi
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
         
     elseif rand<0.5
         ballPos(bb,:) = [round(200*rand) 96];
-        angel=-rand*pi
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=-rand*pi
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
         
     elseif rand<0.75
     ballPos(bb,:) = [4 round(100*rand)];
-    angel=-rand*pi+pi/2;
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+    angel(bb)=-rand*pi+pi/2;
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
       
     else
         ballPos(bb,:) = [196 round(100*rand)];
-        angel=-rand*pi+pi/2;
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=-rand*pi+pi/2;
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
     end
+    
+    [sv(bb) zv(bb)]=RoundOffAngle(angel(bb))
+    
+    
+    
     
     %%
     eval(['pathPos_' num2str(bb) '(1,1:2)=ballPos(bb,:)']);
     
     %% PATH
     
-    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2)), ''linewidth'', 5']);
+    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2), ''linewidth'', 3)']);  %%
                     
     
     %% Ball
   
-     [im1 map alphacar] = imread('icon.png');  % read image; 
-    
-    angel=-angel*180/pi;
-    im2=imrotate(im1,angel);
-    eval(['alphacar2_' num2str(bb) '=imrotate(alphacar,angel)']);
-  
-    
+
     r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],...
         'curvature', [1 1], 'facecolor', 'r');
     
-    im21(bb)=imagesc([ballPos(bb,1)-2 ballPos(bb,1)+2],  [ballPos(bb,2)-2 ballPos(bb,2)+2], flipdim(im2,3), 'alphadata', eval(['alphacar2_' num2str(bb)]));
-
+    
+    
+    h(bb)=imagesc([ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
+    
+    
+    
     
     
     
@@ -123,7 +138,7 @@ while ts
                     eval(['pathPos_' num2str(bb) '=[0 0]']);
                 eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
                 i(bb)=1;
-                    
+                    landing(bb)= 0;
                     dragging(bb) = 1
                     
                 end
@@ -193,6 +208,9 @@ while ts
             xCord(bb)=grad(bb,1)
             yCord(bb)=grad(bb,2)
             
+            
+    [sv(bb) zv(bb)]=RoundOffAngle(atan2(yCord(bb),xCord(bb)));
+            
             eval(['distance(bb)=norm(pathPos_' num2str(bb) '(2,1:2)-pathPos_' num2str(bb) '(1,1:2))'])
             
            
@@ -215,16 +233,9 @@ while ts
             yCord(bb)=yCord(bb)*veloC(bb);
             ballPos(bb,:) = [ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)]
             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
-            angle1(bb)=atan2(yCord(bb),xCord(bb))
             
-            angle1(bb)=-angle1*180/pi
-            
-            
-            im21(bb)=imrotate(im21(bb),angle1)
-    eval(['alphacar2_' num2str(bb) '=imrotate(alphacar,angle1)']);
-            
-            set(im21(bb), 'x',[ballPos(bb,1)-2 ballPos(bb,1)+2], 'y', [ballPos(bb,2)-2 ballPos(bb,2)+2], 'alphadata', eval(['alphacar2_' num2str(bb)]));
-
+            set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
+    
             aw(bb)=aw(bb)+1
             
             if iter(bb)<=aw(bb)
@@ -249,12 +260,15 @@ while ts
             
             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
             
+           set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
+    
         else
              ballPos(bb,:)=[ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)];
              
              set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
             
-            
+            set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
+    
         end
     
     %% Collision    
@@ -280,15 +294,37 @@ while ts
     if ballPos(bb,2)>96 || ballPos(bb,2)<4
         yCord(bb)=-yCord(bb)
     end
+    
+    
+    [sv(bb) zv(bb)]=RoundOffAngle(atan2(yCord(bb),xCord(bb)));
         
-    %% LANDING
+    %% IF LANDING
     
-    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[50,50])<5'])
+    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[80,50])<5'])
+        
+       lmn=atan2(eval(['pathPos_' num2str(bb) '(end-3,2)-pathPos_' num2str(bb) '(end,2)']),eval(['pathPos_' num2str(bb) '(end-3,2)-pathPos_' num2str(bb) '(end,2)']))
     
+        
+        if lmn<0.785 && lmn>-0.785
         dragging(bb)=0;
+        landing(bb)=1;
+        end
+   
+    end
+    
+    
+    if landing(bb)==1;
+       %Landing goes here
+        
+        
         
     end
+    
+    
     end
+    
+    
+    
     
     if rand>0.999
         
@@ -305,33 +341,38 @@ while ts
     i(num)=1;
     aw(num)=0;
     xyz(num)=0;
+    landing(num)=0;
+    sv(bb)=0;
+    zv(bb)=0;
     
     %% BALL POS
     
     if rand<0.25
         ballPos(num,:) = [round(200*rand) 4];
-        angel=rand*pi
-        xCord(num)=cos(angel)*veloC(num);
-        yCord(num)=sin(angel)*veloC(num);
+        angel(num)=rand*pi
+        xCord(num)=cos(angel(num))*veloC(num);
+        yCord(num)=sin(angel(num))*veloC(num);
         
     elseif rand<0.5
         ballPos(num,:) = [round(200*rand) 96];
-        angel=-rand*pi
-        xCord(num)=cos(angel)*veloC(num);
-        yCord(num)=sin(angel)*veloC(num);
+        angel(num)=-rand*pi
+        xCord(num)=cos(angel(num))*veloC(num);
+        yCord(num)=sin(angel(num))*veloC(num);
         
     elseif rand<0.75
     ballPos(num,:) = [4 round(100*rand)];
-    angel=-rand*pi+pi/2;
-        xCord(num)=cos(angel)*veloC(num);
-        yCord(num)=sin(angel)*veloC(num);
-      
+    angel(num)=-rand*pi+pi/2;
+        xCord(num)=cos(angel(num))*veloC(num);
+        yCord(num)=sin(angel(num))*veloC(num);
+        
     else
         ballPos(num,:) = [196 round(100*rand)];
-        angel=-rand*pi+pi/2;
-        xCord(num)=cos(angel)*veloC(num);
-        yCord(num)=sin(angel)*veloC(num);
+        angel(num)=-rand*pi+pi/2;
+        xCord(num)=cos(angel(num))*veloC(num);
+        yCord(num)=sin(angel(num))*veloC(num);
+        
     end
+    [sv(num) zv(num)]=RoundOffAngle(angel(num))
     
     %%
     eval(['pathPos_' num2str(num) '(1,1:2)=ballPos(num,:)']);
@@ -346,6 +387,7 @@ while ts
     r(num) = rectangle('position', [ballPos(num,:)-ballRad 2*ballRad*[1 1]],...
         'curvature', [1 1], 'facecolor', 'r');
     
+    h(num)=imagesc([ballPos(num,1)-ballRad ballPos(num,1)+ballRad], [ballPos(num,2)-ballRad ballPos(num,2)+ballRad], flipdim(sprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:),3), 'alphadata', alphasprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:));
     
     end
     
@@ -354,6 +396,6 @@ while ts
     
     
     
-   pause(0.02-toc(start));
+   pause(0.03-toc(start));
     
 end
