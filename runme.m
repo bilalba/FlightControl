@@ -9,11 +9,6 @@ axis equal;
 axis([0 100 0 100]);
 hold on;
 
-%%
-
-ballRad = 4;
-
-e4=tic;
 %% Mouse code
 
 mouseLoc = zeros(2,3);
@@ -21,19 +16,18 @@ mouseLoc = zeros(2,3);
 pressed = 0;
 justClicked = 0;
 set(gcf, 'WindowButtonMotionFcn', 'mouseLoc = get(gca, ''CurrentPoint'');',...
-    'WindowButtonDownFcn', 'pressed = 1;',...
+    'WindowButtonDownFcn', 'pressed = 1; justClicked = [1 1 1 1 1 1];',...
     'WindowButtonUpFcn', 'pressed = 0;');
 
 
 %% Variables
 sn = 1;
-i=1;
-u=2;
-aw=0
-
-for bb=1:2
+ballRad = 4;
+e4=tic;
+num=6;
+for bb=1:num
     distance(bb)=0;
-    justClicked(bb)=1;
+ 
     iter(bb)=0;
     dragging(bb) = 0;
     dr(bb)=0;
@@ -61,7 +55,7 @@ while 1
     
     start=tic;
     
-    for bb=1:2
+    for bb=1:num
         
         if pressed
             
@@ -69,7 +63,7 @@ while 1
             if justClicked(bb)
                 justClicked(bb) = 0;
                 
-                bb
+                
                 if norm(mouseLoc(1,1:2)-ballPos(bb,:)) <= ballRad
                     dragging(bb) = 1
                     
@@ -92,7 +86,7 @@ while 1
                     
                     eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2))']);
                     
-                    
+                              
                     
                     
                     
@@ -106,7 +100,7 @@ while 1
             dragging(bb) = 0;
         end
     end
-    for bb=1:2
+    for bb=1:num
         
         if dr(bb)==1 && (u(bb)-i(bb))~=0
             eval(['direct(bb,:)=[pathPos_' num2str(bb) '(u(bb),1)-pathPos_' num2str(bb) '((u(bb)-1),1) pathPos_' num2str(bb) '(u(bb),2)-pathPos_' num2str(bb) '((u(bb)-1),2)]'])
@@ -139,7 +133,7 @@ while 1
             
             veloC(bb)=veloC(bb)+extra(bb)
             
-            
+          
             
             xCord(bb)=xCord(bb)*veloC(bb);
             yCord(bb)=yCord(bb)*veloC(bb);
@@ -159,7 +153,5 @@ while 1
     
     
     pause(0.04-toc(start));
-
-    
     
 end
