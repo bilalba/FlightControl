@@ -72,18 +72,18 @@ for bb=1:num
     
     %% Ball
   
-    [im1 map alphacar] = imread('icon.png');  % read image; 
+     [im1 map alphacar] = imread('icon.png');  % read image; 
     
     angel=-angel*180/pi;
     im2=imrotate(im1,angel);
-    alphacar2=imrotate(alphacar,angel);
+    eval(['alphacar2_' num2str(bb) '=imrotate(alphacar,angel)']);
   
-    im21=imagesc([ballPos(bb,1)-2 ballPos(bb,1)+2],  [ballPos(bb,2)-2 ballPos(bb,2)+2], flipdim(im2,3), 'alphadata', alphacar2);
-
+    
     r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],...
         'curvature', [1 1], 'facecolor', 'r');
     
-    
+    im21(bb)=imagesc([ballPos(bb,1)-2 ballPos(bb,1)+2],  [ballPos(bb,2)-2 ballPos(bb,2)+2], flipdim(im2,3), 'alphadata', eval(['alphacar2_' num2str(bb)]));
+
     
     
     
@@ -215,6 +215,16 @@ while ts
             yCord(bb)=yCord(bb)*veloC(bb);
             ballPos(bb,:) = [ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)]
             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
+            angle1(bb)=atan2(yCord(bb),xCord(bb))
+            
+            angle1(bb)=-angle1*180/pi
+            
+            
+            im21(bb)=imrotate(im21(bb),angle1)
+    eval(['alphacar2_' num2str(bb) '=imrotate(alphacar,angle1)']);
+            
+            set(im21(bb), 'x',[ballPos(bb,1)-2 ballPos(bb,1)+2], 'y', [ballPos(bb,2)-2 ballPos(bb,2)+2], 'alphadata', eval(['alphacar2_' num2str(bb)]));
+
             aw(bb)=aw(bb)+1
             
             if iter(bb)<=aw(bb)
@@ -281,7 +291,24 @@ while ts
     end
     
     if rand>0.999
-     if rand<0.25
+        
+        num=num+1;
+        
+        veloC(num)=5;
+     veloC(num)=veloC(num)*0.02;
+    
+    distance(num)=0;
+ 
+    iter(num)=0;
+    dragging(num) = 0;
+    dr(num)=0;
+    i(num)=1;
+    aw(num)=0;
+    xyz(num)=0;
+    
+    %% BALL POS
+    
+    if rand<0.25
         ballPos(num,:) = [round(200*rand) 4];
         angel=rand*pi
         xCord(num)=cos(angel)*veloC(num);
