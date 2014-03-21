@@ -9,18 +9,11 @@ axis equal;
 axis([0 100 0 100]);
 hold on;
 
-%% Mouse code
 
-mouseLoc = zeros(2,3);
-
-pressed = 0;
-justClicked = 0;
-set(gcf, 'WindowButtonMotionFcn', 'mouseLoc = get(gca, ''CurrentPoint'');',...
-    'WindowButtonDownFcn', 'pressed = 1; justClicked = [1 1 1 1 1 1];',...
-    'WindowButtonUpFcn', 'pressed = 0;');
 
 
 %% Variables
+ts=1
 sn = 1;
 ballRad = 4;
 e4=tic;
@@ -32,14 +25,21 @@ for bb=1:num
     dragging(bb) = 0;
     dr(bb)=0;
     i(bb)=1;
-    u(bb)=2;
-    aw(bb)=0
+    aw(bb)=0;
+    xyz(bb)=0;
+    ballPos(bb,:) = round(100*rand(1,2));
+    eval(['pathPos_' num2str(bb) '(1,1:2)=ballPos(bb,:)']);
+    
+    %% PATH
+    
+    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2)), ''linewidth'', 5']);
+                    
     
     %% Ball
-    ballPos(bb,:) = round(100*rand(1,2))
+  
     r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],...
         'curvature', [1 1], 'facecolor', 'r');
-    eval(['pathPos_' num2str(bb) '(1,1:2)=ballPos(bb,:)']);
+    
     
     
     
@@ -47,14 +47,23 @@ for bb=1:num
     
 end
 
+%% Mouse code
+
+mouseLoc = zeros(2,3);
+
+pressed = 0;
+justClicked = 0;
+set(gcf, 'WindowButtonMotionFcn', 'mouseLoc = get(gca, ''CurrentPoint'');',...
+    'WindowButtonDownFcn', 'pressed = 1; justClicked = ones(num);',...
+    'WindowButtonUpFcn', 'pressed = 0;');
+
 %% Start of main loop
 
 
 
-while 1
+while ts
     
     start=tic;
-    
     for bb=1:num
         
         if pressed
@@ -64,7 +73,14 @@ while 1
                 justClicked(bb) = 0;
                 
                 
+                
+                
                 if norm(mouseLoc(1,1:2)-ballPos(bb,:)) <= ballRad
+                    
+                    eval(['pathPos_' num2str(bb) '=[0 0]']);
+                eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
+                i(bb)=1;
+                    
                     dragging(bb) = 1
                     
                 end
@@ -79,12 +95,30 @@ while 1
                 
                 dr(bb)=1;
                 
-                if eval(['norm(mouseLoc(1,1:2)-pathPos_' num2str(bb) '(i(bb),1:2))~=0'])
+                
+                frt=mouseLoc(1,1:2);
+                
+                  for rt=1:2
+                       
+                        if  frt(rt)>95
+                            frt(rt)=95;
+                        end
+                        
+                        if frt(rt)<5
+                           frt(rt)=5;
+                        end
+                    end
+                
+                
+                if eval(['norm(frt-pathPos_' num2str(bb) '(i(bb),1:2))~=0'])
                     i(bb)=i(bb)+1
                     
-                    eval(['pathPos_' num2str(bb) '(i(bb),:)=mouseLoc(1,1:2)']);
+                    eval(['pathPos_' num2str(bb) '(i(bb),:)=frt']);
                     
-                    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2))']);
+                  
+                    
+                    
+                    eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2))']);
                     
                               
                     
@@ -102,8 +136,8 @@ while 1
     end
     for bb=1:num
         
-        if dr(bb)==1 && (u(bb)-i(bb))~=0
-            eval(['direct(bb,:)=[pathPos_' num2str(bb) '(u(bb),1)-pathPos_' num2str(bb) '((u(bb)-1),1) pathPos_' num2str(bb) '(u(bb),2)-pathPos_' num2str(bb) '((u(bb)-1),2)]'])
+        if dr(bb)==1 && i(bb)~=1
+            eval(['direct(bb,:)=[pathPos_' num2str(bb) '(2,1)-pathPos_' num2str(bb) '(1,1) pathPos_' num2str(bb) '(2,2)-pathPos_' num2str(bb) '(1,2)]'])
             
             
             grad(bb,:)=direct(bb,:)/norm(direct(bb,:))
@@ -113,7 +147,7 @@ while 1
             xCord(bb)=grad(bb,1)
             yCord(bb)=grad(bb,2)
             
-            eval(['distance(bb)=norm(pathPos_' num2str(bb) '(u(bb),1:2)-pathPos_' num2str(bb) '(u(bb)-1,1:2))'])
+            eval(['distance(bb)=norm(pathPos_' num2str(bb) '(2,1:2)-pathPos_' num2str(bb) '(1,1:2))'])
             
            
             
@@ -124,7 +158,7 @@ while 1
             
             
             
-            veloC(bb)=veloC(bb)*0.04;
+            veloC(bb)=veloC(bb)*0.02;
             
             iter(bb)=floor(distance(bb)/veloC(bb))
             rem(bb)=distance(bb)-veloC(bb)*iter(bb)
@@ -143,15 +177,47 @@ while 1
             
             if iter(bb)<=aw(bb)
                 
-                u(bb)=u(bb)+1
                 
+                eval(['pathPos_' num2str(bb) '=pathPos_' num2str(bb) '(2:(i(bb)),:)']);
+                
+                i(bb)=i(bb)-1;
+                
+                 eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2))']);
+                    
                 aw(bb)=0
+                
+                xyz(bb)=1
             end
+            
+        elseif xyz(bb)==1
+            
+            ballPos(bb,:)=[ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)];
+            
+            eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
+            
+            set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
         end
+    
+    %% Collision    
+        
+    uv=1:num;
+    uv(bb)=[];
+    
+    
+    for uv=uv
+        
+       if norm(ballPos(bb,:)-ballPos(uv,:))<8
+          
+           ts=0;
+       end
         
     end
     
+    %% 
     
-    pause(0.04-toc(start));
+    
+    
+    end
+   pause(0.02-toc(start));
     
 end
