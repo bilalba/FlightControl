@@ -1,7 +1,6 @@
 %% Initilization
 
 
-%line 75
 
 
 clear all
@@ -14,30 +13,56 @@ axis([0 200 0 100]);
 hold on;
 
 
+gui = imread('gui.png');
 
+gui1=imagesc([0 200], [0 100], flipdim(gui,1));
+
+pause
 
 im = imread('screen.jpg');  % read image;
+[alert,fs]= wavread('this.wav');
+alert1=audioplayer(alert,fs);
+
+[crash,fs1]= wavread('this1.wav');
+crash1=audioplayer(crash,fs1);
 
 [sprite map alphasprite]=imread('low_qual.png'); %read image sprite
 
 
-[h1 w d] = size(sprite)
+[h1 w d] = size(sprite);
 
 imagesc([0 200], [0 100], flipdim(im,1));
 
 set(gca,'Ydir','normal');
 
 %% Variables
-ts=1
+ts=1;
 sn = 1;
-ballRad = 2;
+ballRad = 4;
 e4=tic;
 num=2;
 zxca=0;
+score=0;
+ney=text(130,90,['Your score is:' num2str(score)], 'fontsize', 30, 'fontname', 'georgia');
+   
+distance=zeros(num,1);
+     veloC=zeros(num,1);
+    iter=zeros(num,1);
+    dragging= zeros(num,1);
+    dr=zeros(num,1);
+    i=zeros(num,1);
+    aw=zeros(num,1);
+    xyz=zeros(num,1);
+    landing=zeros(num,1);
+    sv=zeros(num,1);
+    zv=zeros(num,1);
+    ballPos=zeros(num,2);
+    
+
 for bb=1:num
     distance(bb)=0;
-     veloC(bb)=6.5;
-     veloC(bb)=veloC(bb)*0.02;
+     veloC(bb)=8;
+     veloC(bb)=veloC(bb)*0.03;
     iter(bb)=0;
     dragging(bb) = 0;
     dr(bb)=0;
@@ -45,20 +70,20 @@ for bb=1:num
     aw(bb)=0;
     xyz(bb)=0;
     landing(bb)=0;
-    sv(bb)=0
-    zv(bb)=0
+    sv(bb)=0;
+    zv(bb)=0;
     
-    %% BALL POS
+    %% Ball Position define
     
     if rand<0.25
         ballPos(bb,:) = [round(200*rand) 4];
-        angel(bb)=rand*pi
+        angel(bb)=rand*pi;
         xCord(bb)=cos(angel(bb))*veloC(bb);
         yCord(bb)=sin(angel(bb))*veloC(bb);
         
     elseif rand<0.5
         ballPos(bb,:) = [round(200*rand) 96];
-        angel(bb)=-rand*pi
+        angel(bb)=-rand*pi;
         xCord(bb)=cos(angel(bb))*veloC(bb);
         yCord(bb)=sin(angel(bb))*veloC(bb);
         
@@ -75,7 +100,7 @@ for bb=1:num
         yCord(bb)=sin(angel(bb))*veloC(bb);
     end
     
-    [sv(bb) zv(bb)]=RoundOffAngle(angel(bb))
+    [sv(bb) zv(bb)]=RoundOffAngle(angel(bb));
     
     
     
@@ -89,19 +114,9 @@ for bb=1:num
                     
     
     %% Ball
-  
-
-    r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],'curvature', [1 1], 'facecolor', 'r');
-    
-    
-    
+ 
     h(bb)=imagesc([ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
-    
-    
-    
-    
-    
-    
+      
     
 end
 
@@ -156,7 +171,7 @@ while ts
                 
                 frt=mouseLoc(1,1:2);
                 
-                  for rt=1:2
+                  
                        
                         if  frt(1)>195
                             frt(1)=195;
@@ -164,11 +179,11 @@ while ts
                         if frt(2)>95
                            frt(2)=95; 
                         end
-                        
-                        if frt(rt)<5
-                           frt(rt)=5;
+                        for rt=1:2
+                            if frt(rt)<5
+                                frt(rt)=5;
+                            end
                         end
-                    end
                 
                 
                 if eval(['norm(frt-pathPos_' num2str(bb) '(i(bb),1:2))~=0'])
@@ -205,8 +220,8 @@ while ts
             
             
             
-            xCord(bb)=grad(bb,1)
-            yCord(bb)=grad(bb,2)
+            xCord(bb)=grad(bb,1);
+            yCord(bb)=grad(bb,2);
             
             
     [sv(bb) zv(bb)]=RoundOffAngle(atan2(yCord(bb),xCord(bb)));
@@ -215,14 +230,14 @@ while ts
             
            
             
-            veloC(bb)=5;
-     veloC(bb)=veloC(bb)*0.02;
+            veloC(bb)=8;
+     veloC(bb)=veloC(bb)*0.03;
             
            
             
             iter(bb)=floor(distance(bb)/veloC(bb))
             rem(bb)=distance(bb)-veloC(bb)*iter(bb)
-            extra(bb)=rem(bb)/iter(bb)
+            extra(bb)=rem(bb)/(iter(bb)+1)
             
             
             veloC(bb)=veloC(bb)+extra(bb)
@@ -232,7 +247,6 @@ while ts
             xCord(bb)=xCord(bb)*veloC(bb);
             yCord(bb)=yCord(bb)*veloC(bb);
             ballPos(bb,:) = [ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)]
-            set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
             
             set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
     
@@ -258,14 +272,12 @@ while ts
             
             eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
             
-            set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
             
            set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
     
         else
              ballPos(bb,:)=[ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)];
              
-             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
             
             set(h(bb), 'Xdata', [ballPos(bb,1)-ballRad ballPos(bb,1)+ballRad], 'Ydata', [ballPos(bb,2)-ballRad ballPos(bb,2)+ballRad], 'CData', flipdim(sprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:),3), 'alphadata', alphasprite(sv(bb)+1:sv(bb)+100,zv(bb)+1:zv(bb)+100,:));
     
@@ -274,13 +286,22 @@ while ts
     %% Collision    
         
     uv=1:num;
+   
     uv(bb)=[];
     
-    
     for uv=uv
+        poi=norm(ballPos(bb,:)-ballPos(uv,:));
         
-       if norm(ballPos(bb,:)-ballPos(uv,:))<4
+        if poi<12
+          play(alert1);
           
+       
+           
+        end
+       if poi<8
+          stop(alert1);
+          play(crash1);
+         
            ts=0;
        end
         
@@ -332,7 +353,13 @@ while ts
     
     if zxca~=0
         
+        score=score+1;
         
+        
+        delete(ney);
+
+    ney=text(130,90,['Your score is:' num2str(score)], 'fontsize', 30, 'fontname', 'georgia');
+
          distance(zxca)=[]
         iter(zxca)=[];
     dragging(zxca) = [];
@@ -347,8 +374,12 @@ while ts
     angel(zxca)=[];
     xCord(zxca)=[];
     yCord(zxca)=[];
+    
+    
+    
+    delete(h(zxca))
     h(zxca)=[];
-    r(zxca)=[];
+    
     if zxca==num
         eval(['pathPos_' num2str(zxca) '=[]'])
     else
@@ -368,12 +399,12 @@ while ts
     end
     
     
-    if rand>0.999
+    if rand>0.995
         
         num=num+1;
         
-        veloC(num)=5;
-     veloC(num)=veloC(num)*0.02;
+        veloC(num)=8;
+     veloC(num)=veloC(num)*0.03;
     
     distance(num)=0;
  
@@ -392,13 +423,13 @@ while ts
     
     if rand<0.25
         ballPos(num,:) = [round(200*rand) 4];
-        angel(num)=rand*pi
+        angel(num)=rand*pi;
         xCord(num)=cos(angel(num))*veloC(num);
         yCord(num)=sin(angel(num))*veloC(num);
         
     elseif rand<0.5
         ballPos(num,:) = [round(200*rand) 96];
-        angel(num)=-rand*pi
+        angel(num)=-rand*pi;
         xCord(num)=cos(angel(num))*veloC(num);
         yCord(num)=sin(angel(num))*veloC(num);
         
@@ -415,7 +446,7 @@ while ts
         yCord(num)=sin(angel(num))*veloC(num);
         
     end
-    [sv(num) zv(num)]=RoundOffAngle(angel(num))
+    [sv(num) zv(num)]=RoundOffAngle(angel(num));
     
     %%
     eval(['pathPos_' num2str(num) '(1,1:2)=ballPos(num,:)']);
@@ -427,18 +458,17 @@ while ts
     
     %% Ball
   
-    r(num) = rectangle('position', [ballPos(num,:)-ballRad 2*ballRad*[1 1]],...
-        'curvature', [1 1], 'facecolor', 'r');
-    
+      
     h(num)=imagesc([ballPos(num,1)-ballRad ballPos(num,1)+ballRad], [ballPos(num,2)-ballRad ballPos(num,2)+ballRad], flipdim(sprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:),3), 'alphadata', alphasprite(sv(num)+1:sv(num)+100,zv(num)+1:zv(num)+100,:));
     
     end
     
-
     
     
     
     
+    
+    toc(start)
    pause(0.03-toc(start));
     
 end
