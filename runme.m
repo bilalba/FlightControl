@@ -1,5 +1,9 @@
 %% Initilization
 
+
+%line 75
+
+
 clear all
 close all
 clc
@@ -10,8 +14,11 @@ axis([0 200 0 100]);
 hold on;
 
 
-im = imread('screen.jpg');  % read image; 
-im = imrotate(im,360)
+im = imread('screen.jpg');  % read image;
+
+[sprite map alphasprite]=imread('low_qual.png'); %read image sprite
+
+
 
 imagesc([0 200], [0 100], flipdim(im,1));
 
@@ -33,32 +40,33 @@ for bb=1:num
     i(bb)=1;
     aw(bb)=0;
     xyz(bb)=0;
+    landing(bb)=0;
     
     %% BALL POS
     
     if rand<0.25
         ballPos(bb,:) = [round(200*rand) 4];
-        angel=rand*pi
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=rand*pi
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
         
     elseif rand<0.5
         ballPos(bb,:) = [round(200*rand) 96];
-        angel=-rand*pi
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=-rand*pi
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
         
     elseif rand<0.75
     ballPos(bb,:) = [4 round(100*rand)];
-    angel=-rand*pi+pi/2;
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+    angel(bb)=-rand*pi+pi/2;
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
       
     else
         ballPos(bb,:) = [196 round(100*rand)];
-        angel=-rand*pi+pi/2;
-        xCord(bb)=cos(angel)*veloC(bb);
-        yCord(bb)=sin(angel)*veloC(bb);
+        angel(bb)=-rand*pi+pi/2;
+        xCord(bb)=cos(angel(bb))*veloC(bb);
+        yCord(bb)=sin(angel(bb))*veloC(bb);
     end
     
     %%
@@ -66,13 +74,19 @@ for bb=1:num
     
     %% PATH
     
-    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2)), ''linewidth'', 5']);
+    eval(['plot_' num2str(bb) '=plot(pathPos_' num2str(bb) '(:,1),pathPos_' num2str(bb) '(:,2)), ''linewidth'', 1']);  %%
                     
     
     %% Ball
   
+
     r(bb) = rectangle('position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]],...
         'curvature', [1 1], 'facecolor', 'r');
+    
+    angel(bb)=angel(bb)*180/pi;
+    
+    h(bb)=imagesc([ballPos(bb,1) ballPos(bb,1)+2*ballRad], [ballPos(bb,2) ballPos(bb,2)+2*ballRad], flipdim(sprite(1:100,1:100,:),3), 'alphadata', alphasprite(1:100,1:100,:));
+    
     
     
     
@@ -114,7 +128,7 @@ while ts
                     eval(['pathPos_' num2str(bb) '=[0 0]']);
                 eval(['pathPos_' num2str(bb) '(1,:)=ballPos(bb,:)']);
                 i(bb)=1;
-                    
+                    landing(bb)= 0;
                     dragging(bb) = 1
                     
                 end
@@ -206,6 +220,9 @@ while ts
             yCord(bb)=yCord(bb)*veloC(bb);
             ballPos(bb,:) = [ballPos(bb,1)+xCord(bb) ballPos(bb,2)+yCord(bb)]
             set(r(bb), 'position', [ballPos(bb,:)-ballRad 2*ballRad*[1 1]])
+            
+            h(bb)=imagesc([ballPos(bb,1) ballPos(bb,1)+2*ballRad], [ballPos(bb,2) ballPos(bb,2)+2*ballRad], flipdim(sprite(1:100,1:100,:),3), 'alphadata', alphasprite(1:100,1:100,:));
+    
             aw(bb)=aw(bb)+1
             
             if iter(bb)<=aw(bb)
@@ -217,9 +234,9 @@ while ts
                 
                  eval(['set(plot_' num2str(bb) ', ''Xdata'', pathPos_' num2str(bb) '(:,1), ''Ydata'', pathPos_' num2str(bb) '(:,2))']);
                     
-                aw(bb)=0
+                aw(bb)=0;
                 
-                xyz(bb)=1
+                xyz(bb)=1;
             end
             
         elseif xyz(bb)==1
@@ -262,14 +279,27 @@ while ts
         yCord(bb)=-yCord(bb)
     end
         
-    %% LANDING
+    %% IF LANDING
     
-    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[50,50])<5'])
+    if eval(['norm(pathPos_' num2str(bb) '(end,:)-[80,50])<5'])
     
         dragging(bb)=0;
+        landing(bb)=1;
+    end
+    
+    
+    if landing(bb)==1;
+       %Landing goes here
+        
+        
         
     end
+    
+    
     end
+    
+    
+    
     
     if rand>0.999
         
@@ -286,6 +316,7 @@ while ts
     i(num)=1;
     aw(num)=0;
     xyz(num)=0;
+    landing(num)=0;
     
     %% BALL POS
     
@@ -335,6 +366,6 @@ while ts
     
     
     
-   pause(0.02-toc(start));
+   pause(0.03-toc(start));
     
 end
